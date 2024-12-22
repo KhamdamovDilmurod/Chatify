@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "364381557968",
+    "project_id": "family-chatify",
+    "storage_bucket": "family-chatify.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:364381557968:android:4744436a0e8d3b37b6fad5",
+        "android_client_info": {
+          "package_name": "com.example.family_chatify"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA946qMy8sccPnHJTGSI_EsvmRtBQgS5os"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:364381557968:android:97fe793a95a1f5a6b6fad5",
+        "android_client_info": {
+          "package_name": "uz.hamdamovgroup.family_chatify"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA946qMy8sccPnHJTGSI_EsvmRtBQgS5os"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

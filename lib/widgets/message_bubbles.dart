@@ -51,7 +51,7 @@ class TextMessageBubble extends StatelessWidget {
             ),
           ),
           Text(
-            timeago.format(message.sentTime),
+            timeago.format(message.sentTime.toDate()),
             style: TextStyle(
               color: Colors.white70,
             ),
@@ -115,7 +115,7 @@ class ImageMessageBubble extends StatelessWidget {
           ),
           SizedBox(height: height * 0.02),
           Text(
-            timeago.format(message.sentTime),
+            timeago.format(message.sentTime.toDate()),
             style: TextStyle(
               color: Colors.white70,
             ),

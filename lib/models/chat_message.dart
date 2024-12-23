@@ -10,13 +10,14 @@ class ChatMessage {
   final String senderID;
   final MessageType type;
   final String content;
-  final DateTime sentTime;
+  final Timestamp sentTime;  // Changed from DateTime to Timestamp
 
-  ChatMessage(
-      {required this.content,
-      required this.type,
-      required this.senderID,
-      required this.sentTime});
+  ChatMessage({
+    required this.content,
+    required this.type,
+    required this.senderID,
+    required this.sentTime,  // Now accepts Timestamp
+  });
 
   factory ChatMessage.fromJSON(Map<String, dynamic> _json) {
     MessageType _messageType;
@@ -34,7 +35,7 @@ class ChatMessage {
       content: _json["content"],
       type: _messageType,
       senderID: _json["sender_id"],
-      sentTime: _json["sent_time"].toDate(),
+      sentTime: _json["sent_time"], // Directly use Timestamp from Firestore
     );
   }
 
@@ -54,7 +55,10 @@ class ChatMessage {
       "content": content,
       "type": _messageType,
       "sender_id": senderID,
-      "sent_time": Timestamp.fromDate(sentTime),
+      "sent_time": sentTime,  // Directly store Timestamp
     };
   }
+
+  // Helper method to get DateTime if needed
+  DateTime get sentDateTime => sentTime.toDate();
 }

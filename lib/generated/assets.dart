@@ -6,5 +6,6 @@ class Assets {
   static const String imagesLogo = 'assets/images/logo.png';
   static const String previewPrev1 = 'assets/preview/prev1.png';
   static const String previewPrev2 = 'assets/preview/prev2.png';
+  static const String previewPrev3 = 'assets/preview/prev3.png';
 
 }

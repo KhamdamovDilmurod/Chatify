@@ -80,6 +80,7 @@ class DatabaseService {
         .doc(_chatID)
         .collection(MESSAGES_COLLECTION)
         .orderBy("sent_time", descending: false)
+        .limitToLast(100)  // Optional: limit the number of messages to load
         .snapshots();
   }
 
@@ -89,9 +90,10 @@ class DatabaseService {
           .collection(CHAT_COLLECTION)
           .doc(_chatID)
           .collection(MESSAGES_COLLECTION)
-          .add(
-        _message.toJson(),
-      );
+          .add({
+        ...(_message.toJson()),
+        'sent_time': FieldValue.serverTimestamp(), // Override the client timestamp
+      });
     } catch (e) {
       print(e);
     }

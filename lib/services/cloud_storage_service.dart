@@ -45,4 +45,23 @@ class CloudStorageService {
       return null;
     }
   }
+
+  /// Save voice message to Firebase Storage
+  Future<String?> saveAudioToStorage(
+      String chatID, String userID, File file) async {
+    try {
+      Reference ref = _storage.ref().child(
+          'audios/chats/$chatID/${userID}_${Timestamp.now().millisecondsSinceEpoch}.${file.path.split('.').last}'
+      );
+
+      UploadTask task = ref.putFile(File(file.path));
+
+      return await task.then(
+            (result) => result.ref.getDownloadURL(),
+      );
+    } catch (e) {
+      print('Error saving chat image: $e');
+      return null;
+    }
+  }
 }

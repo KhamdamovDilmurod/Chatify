@@ -3,7 +3,12 @@ class Assets {
   Assets._();
 
   static const String iconIcon = 'assets/icon/icon.png';
+  static const String imagesChat = 'assets/images/chat.png';
   static const String imagesLogo = 'assets/images/logo.png';
+  static const String imagesPauseButton = 'assets/images/pause_button.png';
+  static const String imagesPlayButton = 'assets/images/play_button.png';
+  static const String imagesPlus = 'assets/images/plus.png';
+  static const String imagesSupportChat = 'assets/images/support_chat.png';
   static const String previewPrev1 = 'assets/preview/prev1.png';
   static const String previewPrev2 = 'assets/preview/prev2.png';
   static const String previewPrev3 = 'assets/preview/prev3.png';

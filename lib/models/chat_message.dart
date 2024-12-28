@@ -9,7 +9,7 @@ enum MessageType {
 class ChatMessage {
   final String senderID;
   final MessageType type;
-  final String content;
+  String content;
   final Timestamp sentTime;  // Changed from DateTime to Timestamp
 
   ChatMessage({

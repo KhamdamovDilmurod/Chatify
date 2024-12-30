@@ -6,6 +6,8 @@ import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
 
 //Widgets
+import '../utils/colors.dart';
+import '../utils/utils.dart';
 import '../widgets/top_bar.dart';
 import '../widgets/custom_list_view_tiles.dart';
 import '../widgets/custom_input_fields.dart';
@@ -17,6 +19,9 @@ import '../models/chat_message.dart';
 //Providers
 import '../providers/authentication_provider.dart';
 import '../providers/chat_page_provider.dart';
+import 'chat/voice_view/globals.dart';
+import 'chat/voice_view/theme.dart';
+import 'chat/voice_view/widgets/record_button.dart';
 
 class ChatPage extends StatefulWidget {
   final Chat chat;
@@ -32,7 +37,8 @@ class ChatPage extends StatefulWidget {
   }
 }
 
-class _ChatPageState extends State<ChatPage> {
+class _ChatPageState extends State<ChatPage>
+    with SingleTickerProviderStateMixin {
   late double _deviceHeight;
   late double _deviceWidth;
 
@@ -42,11 +48,21 @@ class _ChatPageState extends State<ChatPage> {
   late GlobalKey<FormState> _messageFormState;
   late ScrollController _messagesListViewController;
 
+  late AnimationController animController;
+
+  bool isEmpty = true;
+  bool isAudio = true;
+  String filePath = "";
+
   @override
   void initState() {
     super.initState();
     _messageFormState = GlobalKey<FormState>();
     _messagesListViewController = ScrollController();
+    animController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    );
   }
 
   @override
@@ -73,7 +89,6 @@ class _ChatPageState extends State<ChatPage> {
           body: SingleChildScrollView(
             child: Container(
               padding: EdgeInsets.symmetric(
-                horizontal: _deviceWidth * 0.03,
                 vertical: _deviceHeight * 0.02,
               ),
               height: _deviceHeight,
@@ -120,6 +135,9 @@ class _ChatPageState extends State<ChatPage> {
     if (_pageProvider.messages != null) {
       if (_pageProvider.messages!.length != 0) {
         return Container(
+          padding: EdgeInsets.symmetric(
+            horizontal: _deviceWidth * 0.03,
+          ),
           height: _deviceHeight * 0.74,
           child: ListView.builder(
             controller: _messagesListViewController,
@@ -165,12 +183,7 @@ class _ChatPageState extends State<ChatPage> {
   Widget _sendMessageForm() {
     return Container(
       height: _deviceHeight * 0.06,
-      decoration: BoxDecoration(
-        color: Color.fromRGBO(30, 29, 37, 1.0),
-        borderRadius: BorderRadius.circular(100),
-      ),
       margin: EdgeInsets.symmetric(
-        horizontal: _deviceWidth * 0.04,
         vertical: _deviceHeight * 0.03,
       ),
       child: Form(
@@ -180,9 +193,37 @@ class _ChatPageState extends State<ChatPage> {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            _messageTextField(),
-            _sendMessageButton(),
-            _imageMessageButton(),
+            Flexible(
+              flex: 1,
+              child: _messageTextField(),
+            ),
+            if (isAudio) _imageMessageButton(),
+            isEmpty
+                ? _audioMessageButton()
+                : Container(
+                    margin: EdgeInsets.zero,
+                    padding: EdgeInsets.zero,
+                    height: 36,
+                    width: 36,
+                    alignment: Alignment.center,
+                    clipBehavior: Clip.hardEdge,
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: CYAN,
+                    ),
+                    child: IconButton(
+                        onPressed: () {
+                          if (_messageFormState.currentState!.validate()) {
+                            _messageFormState.currentState!.save();
+                            _pageProvider.sendTextMessage();
+                            _messageFormState.currentState!.reset();
+                          }
+                        },
+                        icon: Icon(
+                          Icons.send,
+                          color: WHITE,
+                        )),
+                  ),
           ],
         ),
       ),
@@ -190,35 +231,20 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   Widget _messageTextField() {
-    return SizedBox(
-      width: _deviceWidth * 0.65,
+    return Padding(
+      padding: const EdgeInsets.only(left: 8.0),
       child: CustomTextFormField(
-          onSaved: (_value) {
-            _pageProvider.message = _value;
-          },
-          regEx: r"^(?!\s*$).+",
-          hintText: "Type a message",
-          obscureText: false),
-    );
-  }
-
-  Widget _sendMessageButton() {
-    double _size = _deviceHeight * 0.04;
-    return Container(
-      height: _size,
-      width: _size,
-      child: IconButton(
-        icon: Icon(
-          Icons.send,
-          color: Colors.white,
-        ),
-        onPressed: () {
-          if (_messageFormState.currentState!.validate()) {
-            _messageFormState.currentState!.save();
-            _pageProvider.sendTextMessage();
-            _messageFormState.currentState!.reset();
-          }
+        onSaved: (_value) {
+          _pageProvider.message = _value;
         },
+        regEx: r"^(?!\s*$).+",
+        hintText: "Type a message",
+        obscureText: false,
+        onChanged: (value) {
+          isEmpty = value == "";
+          setState(() {});
+        },
+        isEnabled: isAudio,
       ),
     );
   }
@@ -240,6 +266,23 @@ class _ChatPageState extends State<ChatPage> {
         },
         child: Icon(Icons.camera_enhance),
       ),
+    );
+  }
+
+  Widget _audioMessageButton() {
+    return Theme(
+      data: AudioTheme.dartTheme(),
+      child: RecordButton(
+          voicePath: (path) {
+            debugPrint("file nomi ${path}");
+            _pageProvider.sendVoiceMessage(path);
+          },
+          edit: (edit) {
+            setState(() {
+              this.isAudio = edit;
+            });
+          },
+          animController: animController),
     );
   }
 }

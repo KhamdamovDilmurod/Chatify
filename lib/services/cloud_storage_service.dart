@@ -60,7 +60,7 @@ class CloudStorageService {
             (result) => result.ref.getDownloadURL(),
       );
     } catch (e) {
-      print('Error saving chat image: $e');
+      print('Error saving chat voice message: $e');
       return null;
     }
   }

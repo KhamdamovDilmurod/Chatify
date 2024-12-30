@@ -14,10 +14,10 @@ class RecordButton extends StatefulWidget {
   Function voicePath;
   Function edit;
 
-  RecordButton(
-    this.voicePath,
-    this.edit, {
+  RecordButton( {
     Key? key,
+    required this.voicePath,
+    required this.edit,
     required this.animController,
   }) : super(key: key);
 
@@ -116,7 +116,7 @@ class _RecordButtonState extends State<RecordButton> {
           borderRadius: BorderRadius.circular(Globals.borderRadius),
           color: CYAN,
         ),
-        padding: const EdgeInsets.symmetric(vertical: 15),
+        padding: const EdgeInsets.symmetric(vertical: 8),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
@@ -150,7 +150,7 @@ class _RecordButtonState extends State<RecordButton> {
           color: CYAN,
         ),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 15),
+          padding: const EdgeInsets.symmetric(horizontal: 12),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             mainAxisSize: MainAxisSize.max,
@@ -167,7 +167,6 @@ class _RecordButtonState extends State<RecordButton> {
                 duration: const Duration(seconds: 3),
                 flowColors: const [Colors.white, Colors.grey],
               ),
-              const SizedBox(width: size),
             ],
           ),
         ),
@@ -184,7 +183,7 @@ class _RecordButtonState extends State<RecordButton> {
         color: CYAN,
       ),
       child: Padding(
-        padding: const EdgeInsets.only(left: 15, right: 15),
+        padding: const EdgeInsets.only(left: 8, right: 8),
         child: GestureDetector(
           behavior: HitTestBehavior.opaque,
           child: Row(
@@ -197,55 +196,53 @@ class _RecordButtonState extends State<RecordButton> {
                 duration: const Duration(seconds: 3),
                 flowColors: const [Colors.white, Colors.grey],
               ),
-              Container(
-                child: Row(
-                  children: [
-                    IconButton(
-                        onPressed: () async {
-                          Vibrate.feedback(FeedbackType.success);
-                          timer?.cancel();
-                          timer = null;
-                          startTime = null;
-                          recordDuration = "00:00";
+              Row(
+                children: [
+                  IconButton(
+                      onPressed: () async {
+                        Vibrate.feedback(FeedbackType.success);
+                        timer?.cancel();
+                        timer = null;
+                        startTime = null;
+                        recordDuration = "00:00";
 
-                          var filePath = await Record().stop();
-                          debugPrint("Cancelled recording");
-                          File(filePath!).delete();
-                          debugPrint("Deleted $filePath");
-                          debugPrint("Stop Record");
-                          setState(() {
-                            isLocked = false;
-                          });
-                          widget.edit(true);
-                        },
-                        icon: const Icon(
-                          Icons.stop,
-                          size: 30,
-                          color: Colors.red,
-                        )),
-                    IconButton(
-                        onPressed: () async {
-                          Vibrate.feedback(FeedbackType.success);
-                          timer?.cancel();
-                          timer = null;
-                          startTime = null;
-                          recordDuration = "00:00";
+                        var filePath = await Record().stop();
+                        debugPrint("Cancelled recording");
+                        File(filePath!).delete();
+                        debugPrint("Deleted $filePath");
+                        debugPrint("Stop Record");
+                        setState(() {
+                          isLocked = false;
+                        });
+                        widget.edit(true);
+                      },
+                      icon: const Icon(
+                        Icons.stop,
+                        size: 30,
+                        color: Colors.red,
+                      )),
+                  IconButton(
+                      onPressed: () async {
+                        Vibrate.feedback(FeedbackType.success);
+                        timer?.cancel();
+                        timer = null;
+                        startTime = null;
+                        recordDuration = "00:00";
 
-                          var filePath = await Record().stop();
-                          widget.voicePath(filePath);
-                          debugPrint("Send Record");
-                          setState(() {
-                            isLocked = false;
-                          });
-                          widget.edit(true);
-                        },
-                        icon: const Icon(
-                          Icons.send,
-                          size: 24,
-                          color: WHITE,
-                        )),
-                  ],
-                ),
+                        var filePath = await Record().stop();
+                        widget.voicePath(filePath);
+                        debugPrint("Send Record");
+                        setState(() {
+                          isLocked = false;
+                        });
+                        widget.edit(true);
+                      },
+                      icon: const Icon(
+                        Icons.send,
+                        size: 24,
+                        color: WHITE,
+                      )),
+                ],
               )
             ],
           ),

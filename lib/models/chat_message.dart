@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 enum MessageType {
   TEXT,
   IMAGE,
+  AUDIO,
   UNKNOWN,
 }
 
@@ -28,6 +29,9 @@ class ChatMessage {
       case "image":
         _messageType = MessageType.IMAGE;
         break;
+      case "audio":
+        _messageType = MessageType.AUDIO;
+        break;
       default:
         _messageType = MessageType.UNKNOWN;
     }
@@ -47,6 +51,9 @@ class ChatMessage {
         break;
       case MessageType.IMAGE:
         _messageType = "image";
+        break;
+      case MessageType.AUDIO:
+        _messageType = "audio";
         break;
       default:
         _messageType = "";

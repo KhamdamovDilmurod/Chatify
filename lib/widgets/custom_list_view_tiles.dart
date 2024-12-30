@@ -157,26 +157,27 @@ class CustomChatListViewTile extends StatelessWidget {
           SizedBox(
             width: width * 0.05,
           ),
-          // VoiceMessageBubble(
-          //   isOwnMessage: isOwnMessage,
-          //   message: message,
-          //   height: deviceHeight * 0.06,
-          //   width: width,
-          // ),
-          /// if voice not work please of this functionality
-          message.type == MessageType.TEXT
-              ? TextMessageBubble(
+          if (message.type == MessageType.TEXT)
+              TextMessageBubble(
                   isOwnMessage: isOwnMessage,
                   message: message,
                   height: deviceHeight * 0.06,
                   width: width,
-                )
-              : ImageMessageBubble(
-                  isOwnMessage: isOwnMessage,
-                  message: message,
-                  height: deviceHeight * 0.30,
-                  width: width * 0.55,
                 ),
+          if (message.type == MessageType.IMAGE)
+            ImageMessageBubble(
+              isOwnMessage: isOwnMessage,
+              message: message,
+              height: deviceHeight * 0.30,
+              width: width * 0.55,
+            ),
+          if (message.type == MessageType.AUDIO)
+          VoiceMessageBubble(
+            isOwnMessage: isOwnMessage,
+            message: message,
+            height: deviceHeight * 0.06,
+            width: width,
+          ),
         ],
       ),
     );

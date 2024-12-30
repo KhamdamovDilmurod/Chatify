@@ -2,19 +2,25 @@ import 'package:flutter/material.dart';
 
 class CustomTextFormField extends StatelessWidget {
   final Function(String) onSaved;
+  Function(String)? onChanged;
   final String regEx;
   final String hintText;
   final bool obscureText;
+  bool? isEnabled;
 
   CustomTextFormField(
       {required this.onSaved,
       required this.regEx,
       required this.hintText,
-      required this.obscureText});
+      required this.obscureText,
+        this.onChanged,
+        this.isEnabled,
+      });
 
   @override
   Widget build(BuildContext context) {
     return TextFormField(
+      enabled: isEnabled,
       onSaved: (_value) => onSaved(_value!),
       cursorColor: Colors.white,
       style: TextStyle(color: Colors.white),
@@ -32,6 +38,7 @@ class CustomTextFormField extends StatelessWidget {
         hintText: hintText,
         hintStyle: TextStyle(color: Colors.white54),
       ),
+      onChanged: onChanged,
     );
   }
 }

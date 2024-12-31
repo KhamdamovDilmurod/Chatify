@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter_vibrate/flutter_vibrate.dart';
+// import 'package:flutter_vibrate/flutter_vibrate.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:record/record.dart';
 import '../../../../../../utils/colors.dart';
@@ -200,7 +200,7 @@ class _RecordButtonState extends State<RecordButton> {
                 children: [
                   IconButton(
                       onPressed: () async {
-                        Vibrate.feedback(FeedbackType.success);
+                        // Vibrate.feedback(FeedbackType.success);
                         timer?.cancel();
                         timer = null;
                         startTime = null;
@@ -223,7 +223,7 @@ class _RecordButtonState extends State<RecordButton> {
                       )),
                   IconButton(
                       onPressed: () async {
-                        Vibrate.feedback(FeedbackType.success);
+                        // Vibrate.feedback(FeedbackType.success);
                         timer?.cancel();
                         timer = null;
                         startTime = null;
@@ -277,7 +277,7 @@ class _RecordButtonState extends State<RecordButton> {
         debugPrint("onLongPressEnd");
         if (await Record().hasPermission()) {
           if (isCancelled(details.localPosition, context)) {
-            Vibrate.feedback(FeedbackType.heavy);
+            // Vibrate.feedback(FeedbackType.heavy);
 
             timer?.cancel();
             timer = null;
@@ -301,7 +301,7 @@ class _RecordButtonState extends State<RecordButton> {
           } else if (checkIsLocked(details.localPosition)) {
             widget.animController.reverse();
 
-            Vibrate.feedback(FeedbackType.heavy);
+            // Vibrate.feedback(FeedbackType.heavy);
             debugPrint("Locked recording");
             debugPrint(details.localPosition.dy.toString());
             debugPrint("Locked recording");
@@ -312,7 +312,7 @@ class _RecordButtonState extends State<RecordButton> {
           } else {
             widget.animController.reverse();
 
-            Vibrate.feedback(FeedbackType.success);
+            // Vibrate.feedback(FeedbackType.success);
 
             timer?.cancel();
             timer = null;
@@ -337,11 +337,11 @@ class _RecordButtonState extends State<RecordButton> {
         debugPrint("onLongPress");
         if (await Record().hasPermission()) {
           widget.animController.forward();
-          Vibrate.feedback(FeedbackType.success);
+          // Vibrate.feedback(FeedbackType.success);
           record = Record();
           await record?.start(
             path: "${await CreateFolder().createFolderInAppDocDir("record")}audio_${DateTime.now().millisecondsSinceEpoch}.mp4",
-            encoder: AudioEncoder.AAC,
+            encoder: AudioEncoder.aacHe,
             bitRate: 128000,
             samplingRate: 44100,
           );

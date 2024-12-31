@@ -74,7 +74,6 @@ class _ChatPlayerItemViewState extends State<ChatPlayerItemView> {
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
       statusBarColor: Colors.black,
     ));
-    widget.item.content = "https://www2.cs.uic.edu/~i101/SoundFiles/preamble10.wav";
     _init();
   }
 

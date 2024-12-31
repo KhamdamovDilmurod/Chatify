@@ -118,12 +118,69 @@ class DatabaseService {
 
   Future<DocumentReference?> createChat(Map<String, dynamic> _data) async {
     try {
-      DocumentReference _chat =
-      await _db.collection(CHAT_COLLECTION).add(_data);
+      // Check if chat already exists
+      List<String> memberIds = List<String>.from(_data['members']);
+      DocumentReference? existingChat = await checkExistingChat(memberIds, _data['is_group']);
+
+      if (existingChat != null) {
+        return existingChat;
+      }
+
+      // Create new chat if none exists
+      DocumentReference _chat = await _db.collection(CHAT_COLLECTION).add(_data);
       return _chat;
     } catch (e) {
       print(e);
+      return null;
     }
+  }
+
+  Future<DocumentReference?> checkExistingChat(List<String> memberIds, bool isGroup) async {
+    try {
+      // Query chats containing at least one of the members
+      QuerySnapshot querySnapshot = await _db
+          .collection(CHAT_COLLECTION)
+          .where('members', arrayContainsAny: memberIds)
+          .where('is_group', isEqualTo: isGroup)
+          .get();
+
+      for (var doc in querySnapshot.docs) {
+        List<dynamic> chatMembers = doc.get('members');
+
+        // For one-on-one chats
+        if (!isGroup && chatMembers.length == 2) {
+          bool allMembersMatch = memberIds.every(
+                  (id) => chatMembers.contains(id)
+          );
+          if (allMembersMatch) {
+            return doc.reference;
+          }
+        }
+
+        // For group chats
+        else if (isGroup && chatMembers.length == memberIds.length) {
+          bool allMembersMatch = memberIds.every(
+                  (id) => chatMembers.contains(id)
+          );
+          if (allMembersMatch) {
+            return doc.reference;
+          }
+        }
+      }
+
+      return null;
+    } catch (e) {
+      print("Error checking existing chat: $e");
+      return null;
+    }
+  }
+
+  // Helper method to get all chats for a specific set of members
+  Future<QuerySnapshot> getChatsByMembers(List<String> memberIds) {
+    return _db
+        .collection(CHAT_COLLECTION)
+        .where('members', arrayContainsAny: memberIds)
+        .get();
   }
 
 }

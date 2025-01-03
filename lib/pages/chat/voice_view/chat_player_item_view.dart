@@ -10,8 +10,9 @@ import '../../chat_page.dart';
 
 class ChatPlayerItemView extends StatefulWidget {
   ChatMessage item;
+  bool isOwn;
 
-  ChatPlayerItemView(this.item, {Key? key}) : super(key: key);
+  ChatPlayerItemView(this.item, {Key? key, required this.isOwn}) : super(key: key);
 
   @override
   _ChatPlayerItemViewState createState() => _ChatPlayerItemViewState();
@@ -21,7 +22,8 @@ class _ChatPlayerItemViewState extends State<ChatPlayerItemView> {
   String audioDuration = "";
   bool _enabled = false;
   late double seconds, minuits, hour;
-  Color color = BLUE;
+
+  Color? color;
   double progress = 0.0;
   double maxProgress = 0.0;
 
@@ -70,6 +72,11 @@ class _ChatPlayerItemViewState extends State<ChatPlayerItemView> {
   @override
   void initState() {
     super.initState();
+    if(widget.isOwn){
+      color = Color.fromRGBO(51, 49, 68, 1.0);
+    } else {
+      color = BLUE;
+    }
     // WidgetsBinding.instance?.addObserver(this);
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
       statusBarColor: Colors.black,

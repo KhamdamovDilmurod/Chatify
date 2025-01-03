@@ -2,6 +2,7 @@
 //Packages
 import 'dart:io';
 
+import 'package:family_chatify/services/snackbar_service.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:image_picker/image_picker.dart';
@@ -152,7 +153,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     _password = value;
                   });
                 },
-                regEx: r".{8,}",
+                regEx: r".{1,}",
                 hintText: "Password",
                 obscureText: true),
           ],
@@ -167,17 +168,22 @@ class _RegisterPageState extends State<RegisterPage> {
       height: _deviceHeight * 0.065,
       width: _deviceWidth * 0.65,
       onPressed: () async {
-        if (_registerFormKey.currentState!.validate() &&
-            _profileImage != null) {
-          _registerFormKey.currentState!.save();
-          String? uid = await _auth.registerUserUsingEmailAndPassword(
-              _email!, _password!);
-          String? imageURL =
-          await _cloudStorage.saveUserImageToStorage(uid!, _profileImage!);
-          await _db.createUser(uid, _email!, _name!, imageURL!);
-          await _auth.logout();
-          await _auth.loginUsingEmailAndPassword(_email!, _password!);
-        }
+        if (_registerFormKey.currentState!.validate()) {
+          if(_profileImage==null){
+            SnackBarService().showSnackBarError(
+              'Please select profile image!!!',
+            );
+          } else {
+            _registerFormKey.currentState!.save();
+            String? uid = await _auth.registerUserUsingEmailAndPassword(
+                _email!, _password!);
+            String? imageURL =
+            await _cloudStorage.saveUserImageToStorage(uid!, _profileImage!);
+            await _db.createUser(uid, _email!, _name!, imageURL!);
+            await _auth.logout();
+            await _auth.loginUsingEmailAndPassword(_email!, _password!);
+
+          }}
       },
     );
   }

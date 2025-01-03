@@ -5,6 +5,7 @@ import 'package:timeago/timeago.dart' as timeago;
 
 //Models
 import '../models/chat_message.dart';
+import '../pages/chat/image_view_screen.dart';
 import '../pages/chat/voice_view/chat_player_item_view.dart';
 
 class TextMessageBubble extends StatelessWidget {
@@ -87,43 +88,56 @@ class ImageMessageBubble extends StatelessWidget {
       image: NetworkImage(message.content),
       fit: BoxFit.cover,
     );
-    return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: width * 0.02,
-        vertical: height * 0.03,
-      ),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(15),
-        gradient: LinearGradient(
-          colors: _colorScheme,
-          stops: [0.30, 0.70],
-          begin: Alignment.bottomLeft,
-          end: Alignment.topRight,
-        ),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.max,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            height: height,
-            width: width,
+    return
+      GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ImageViewerScreen(
+                  imageUrl: message.content
+                ),
+              ),
+            );
+          },
+          child: Container(
+            padding: EdgeInsets.symmetric(
+              horizontal: width * 0.02,
+              vertical: height * 0.03,
+            ),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(15),
-              image: _image,
+              gradient: LinearGradient(
+                colors: _colorScheme,
+                stops: [0.30, 0.70],
+                begin: Alignment.bottomLeft,
+                end: Alignment.topRight,
+              ),
             ),
-          ),
-          SizedBox(height: height * 0.02),
-          Text(
-            timeago.format(message.sentTime.toDate()),
-            style: TextStyle(
-              color: Colors.white70,
+            child: Column(
+              mainAxisSize: MainAxisSize.max,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  height: height,
+                  width: width,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(15),
+                    image: _image,
+                  ),
+                ),
+                SizedBox(height: height * 0.02),
+                Text(
+                  timeago.format(message.sentTime.toDate()),
+                  style: TextStyle(
+                    color: Colors.white70,
+                  ),
+                ),
+              ],
             ),
-          ),
-        ],
-      ),
-    );
+          )// your existing image bubble content
+      );
   }
 }
 
@@ -172,7 +186,7 @@ class VoiceMessageBubble extends StatelessWidget {
         children: [
           Container(
             width: width*.8,
-            child: ChatPlayerItemView(message),
+            child: ChatPlayerItemView(message,isOwn: isOwnMessage,),
           ),
           SizedBox(height: height * 0.02),
           Text(

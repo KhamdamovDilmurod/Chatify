@@ -19,6 +19,7 @@ import '../models/chat_message.dart';
 //Providers
 import '../providers/authentication_provider.dart';
 import '../providers/chat_page_provider.dart';
+import 'chat/video_call_screen.dart';
 import 'chat/voice_view/globals.dart';
 import 'chat/voice_view/theme.dart';
 import 'chat/voice_view/widgets/record_button.dart';
@@ -81,6 +82,15 @@ class _ChatPageState extends State<ChatPage>
     );
   }
 
+  String getOtherUserId() {
+    final currentUserId = _auth.user.uid;
+    // Find the member that isn't the current user
+    final otherUser = widget.chat.members.firstWhere(
+          (member) => member.uid != currentUserId,
+    );
+    return otherUser.uid;
+  }
+
   Widget _buildUI() {
     return Builder(
       builder: (BuildContext _context) {
@@ -99,16 +109,32 @@ class _ChatPageState extends State<ChatPage>
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   TopBar(
-                    this.widget.chat.title(),
+                    widget.chat.title(),
                     fontSize: 10,
-                    primaryAction: IconButton(
-                      icon: Icon(
-                        Icons.delete,
-                        color: Color.fromRGBO(0, 82, 218, 1.0),
-                      ),
-                      onPressed: () {
-                        _pageProvider.deleteChat();
-                      },
+                    primaryAction: Row(
+                      children: [
+                        IconButton(
+                          icon: Icon(Icons.video_call),
+                          color: Color.fromRGBO(0, 82, 218, 1.0),
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => VideoCallScreen(roomId: widget.chat.uid, userId: 'userId',),
+                              ),
+                            );
+                          }
+                        ),
+                        IconButton(
+                          icon: Icon(
+                            Icons.delete,
+                            color: Color.fromRGBO(0, 82, 218, 1.0),
+                          ),
+                          onPressed: () {
+                            _pageProvider.deleteChat();
+                          },
+                        ),
+                      ],
                     ),
                     secondaryAction: IconButton(
                       icon: Icon(

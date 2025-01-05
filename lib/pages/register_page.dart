@@ -1,10 +1,11 @@
-
 //Packages
 import 'dart:io';
 
 import 'package:family_chatify/services/snackbar_service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
@@ -34,16 +35,28 @@ class _RegisterPageState extends State<RegisterPage> {
   late double _deviceWidth;
 
   late AuthenticationProvider _auth;
+  final FirebaseAuth _googleAuth = FirebaseAuth.instance;
   late DatabaseService _db;
   late CloudStorageService _cloudStorage;
   late NavigationService _navigation;
 
+  User? _user;
   String? _email;
   String? _password;
   String? _name;
   File? _profileImage;
 
   final _registerFormKey = GlobalKey<FormState>();
+
+  @override
+  void initState() {
+    _googleAuth.authStateChanges().listen((event) {
+      setState(() {
+        _user = event;
+      });
+    });
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -82,6 +95,13 @@ class _RegisterPageState extends State<RegisterPage> {
               SizedBox(
                 height: _deviceHeight * 0.02,
               ),
+              _user != null
+                  ? Text(
+                      _user?.displayName??"name",
+                      style: TextStyle(color: Colors.white),
+                    )
+                  : _googleSignInButton(),
+              _googleSignInButton()
             ],
           ),
         ),
@@ -110,7 +130,7 @@ class _RegisterPageState extends State<RegisterPage> {
               image: _profileImage != null
                   ? FileImage(_profileImage!)
                   : NetworkImage(
-                  "https://cdn0.iconfinder.com/data/icons/occupation-002/64/programmer-programming-occupation-avatar-512.png"),
+                      "https://cdn0.iconfinder.com/data/icons/occupation-002/64/programmer-programming-occupation-avatar-512.png"),
             ),
           ),
         ),
@@ -144,7 +164,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   });
                 },
                 regEx:
-                r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+",
+                    r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+",
                 hintText: "Email",
                 obscureText: false),
             CustomTextFormField(
@@ -169,7 +189,7 @@ class _RegisterPageState extends State<RegisterPage> {
       width: _deviceWidth * 0.65,
       onPressed: () async {
         if (_registerFormKey.currentState!.validate()) {
-          if(_profileImage==null){
+          if (_profileImage == null) {
             SnackBarService().showSnackBarError(
               'Please select profile image!!!',
             );
@@ -177,14 +197,56 @@ class _RegisterPageState extends State<RegisterPage> {
             _registerFormKey.currentState!.save();
             String? uid = await _auth.registerUserUsingEmailAndPassword(
                 _email!, _password!);
-            String? imageURL =
-            await _cloudStorage.saveUserImageToStorage(uid!, _profileImage!);
+            String? imageURL = await _cloudStorage.saveUserImageToStorage(
+                uid!, _profileImage!);
             await _db.createUser(uid, _email!, _name!, imageURL!);
             await _auth.logout();
             await _auth.loginUsingEmailAndPassword(_email!, _password!);
-
-          }}
+          }
+        }
       },
     );
   }
+
+  Widget _googleSignInButton() {
+    return RoundedButton(
+      name: "Sign In With Google",
+      height: _deviceHeight * 0.065,
+      width: _deviceWidth * 0.65,
+      onPressed: _handleGoogleSignIn,
+    );
+  }
+
+  void _handleGoogleSignIn() async {
+    try {
+      // Google Sign-In orqali avtorizatsiya qilish
+      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+      if (googleUser != null) {
+        final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+
+        // Google Sign-In tokenidan foydalanib Firebase uchun credential yaratish
+        final OAuthCredential credential = GoogleAuthProvider.credential(
+          accessToken: googleAuth.accessToken,
+          idToken: googleAuth.idToken,
+        );
+
+        // Firebase orqali ro'yxatdan o'tish yoki tizimga kirish
+        final UserCredential userCredential = await FirebaseAuth.instance.signInWithCredential(credential);
+
+        // Tizimga kirgan foydalanuvchi ma'lumotlari
+        final User? user = userCredential.user;
+
+        if (user != null) {
+          setState(() {
+            _user = user;
+          });
+
+          print("Google Sign-In muvaffaqiyatli: ${user.email}");
+        }
+      }
+    } catch (error) {
+      print("Google Sign-In xatosi: $error");
+    }
+  }
+
 }

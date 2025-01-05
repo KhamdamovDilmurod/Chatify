@@ -7,6 +7,7 @@ class CustomTextFormField extends StatelessWidget {
   final String hintText;
   final bool obscureText;
   bool? isEnabled;
+  final String? initialValue;
 
   CustomTextFormField(
       {required this.onSaved,
@@ -15,11 +16,13 @@ class CustomTextFormField extends StatelessWidget {
       required this.obscureText,
         this.onChanged,
         this.isEnabled,
+        this.initialValue,
       });
 
   @override
   Widget build(BuildContext context) {
     return TextFormField(
+      initialValue: initialValue,
       enabled: isEnabled,
       onSaved: (_value) => onSaved(_value!),
       cursorColor: Colors.white,

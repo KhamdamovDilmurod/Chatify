@@ -1,12 +1,8 @@
-//Packages
 import 'dart:io';
 
 import 'package:family_chatify/services/snackbar_service.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
-import 'package:google_sign_in/google_sign_in.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
 //Services
@@ -18,7 +14,6 @@ import '../services/navigation_service.dart';
 //Widgets
 import '../widgets/custom_input_fields.dart';
 import '../widgets/rounded_button.dart';
-import '../widgets/rounded_image.dart';
 
 //Providers
 import '../providers/authentication_provider.dart';
@@ -35,27 +30,39 @@ class _RegisterPageState extends State<RegisterPage> {
   late double _deviceWidth;
 
   late AuthenticationProvider _auth;
-  final FirebaseAuth _googleAuth = FirebaseAuth.instance;
   late DatabaseService _db;
   late CloudStorageService _cloudStorage;
   late NavigationService _navigation;
 
-  User? _user;
+  TextEditingController _emailController = TextEditingController();
+  TextEditingController _nameController = TextEditingController();
+  TextEditingController _passwordController = TextEditingController();
   String? _email;
   String? _password;
   String? _name;
+  String? _imgUrl;
   File? _profileImage;
+  bool _isGoogleSignIn = false;
 
   final _registerFormKey = GlobalKey<FormState>();
 
   @override
   void initState() {
-    _googleAuth.authStateChanges().listen((event) {
-      setState(() {
-        _user = event;
-      });
-    });
     super.initState();
+    // Initialize the auth provider reference
+    _auth = Provider.of<AuthenticationProvider>(context, listen: false);
+    // Check for Google sign-in data immediately
+    _checkAndUpdateGoogleData();
+  }
+
+  void _checkAndUpdateGoogleData() {
+    if (_auth.googleEmail != null && _email == null) {
+      setState(() {
+        _email = _auth.googleEmail;
+        _name = _auth.googleDisplayName ?? '';
+        _isGoogleSignIn = true;
+      });
+    }
   }
 
   @override
@@ -66,6 +73,7 @@ class _RegisterPageState extends State<RegisterPage> {
     _navigation = GetIt.instance.get<NavigationService>();
     _deviceHeight = MediaQuery.of(context).size.height;
     _deviceWidth = MediaQuery.of(context).size.width;
+
     return _buildUI();
   }
 
@@ -95,13 +103,7 @@ class _RegisterPageState extends State<RegisterPage> {
               SizedBox(
                 height: _deviceHeight * 0.02,
               ),
-              _user != null
-                  ? Text(
-                      _user?.displayName??"name",
-                      style: TextStyle(color: Colors.white),
-                    )
-                  : _googleSignInButton(),
-              _googleSignInButton()
+              if (!_isGoogleSignIn) _googleSignInButton(),
             ],
           ),
         ),
@@ -129,8 +131,11 @@ class _RegisterPageState extends State<RegisterPage> {
               fit: BoxFit.cover,
               image: _profileImage != null
                   ? FileImage(_profileImage!)
-                  : NetworkImage(
-                      "https://cdn0.iconfinder.com/data/icons/occupation-002/64/programmer-programming-occupation-avatar-512.png"),
+                  : (_auth.googlePhotoUrl != null && _isGoogleSignIn
+                      ? NetworkImage(_auth.googlePhotoUrl!) as ImageProvider
+                      : const NetworkImage(
+                              "https://cdn0.iconfinder.com/data/icons/occupation-002/64/programmer-programming-occupation-avatar-512.png")
+                          as ImageProvider),
             ),
           ),
         ),
@@ -148,34 +153,89 @@ class _RegisterPageState extends State<RegisterPage> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            CustomTextFormField(
-                onSaved: (value) {
-                  setState(() {
-                    _name = value;
-                  });
-                },
-                regEx: r'.{2,}',
+            TextFormField(
+              controller: _nameController,
+              cursorColor: Colors.white,
+              style: TextStyle(color: Colors.white),
+              onSaved: (value) {
+                setState(() {
+                  _name = value;
+                });
+              },
+              validator: (value) {
+                if (value == null || value.length < 2) {
+                  return 'Name must be at least 2 characters';
+                }
+                return null;
+              },
+              decoration: InputDecoration(
+                fillColor: Color.fromRGBO(30, 29, 37, 1.0),
+                filled: true,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10.0),
+                  borderSide: BorderSide.none,
+                ),
                 hintText: "Name",
-                obscureText: false),
-            CustomTextFormField(
-                onSaved: (value) {
-                  setState(() {
-                    _email = value;
-                  });
-                },
-                regEx:
-                    r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+",
+                hintStyle: TextStyle(color: Colors.white54),
+              ),
+            ),
+            TextFormField(
+              controller: _emailController,
+              cursorColor: Colors.white,
+              style: TextStyle(color: Colors.white),
+              enabled: !_isGoogleSignIn,
+              onSaved: (value) {
+                setState(() {
+                  _email = value;
+                });
+              },
+              validator: (value) {
+                if (value == null ||
+                    !RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
+                        .hasMatch(value)) {
+                  return 'Please enter a valid email';
+                }
+                return null;
+              },
+              keyboardType: TextInputType.emailAddress,
+              decoration: InputDecoration(
+                fillColor: Color.fromRGBO(30, 29, 37, 1.0),
+                filled: true,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10.0),
+                  borderSide: BorderSide.none,
+                ),
                 hintText: "Email",
-                obscureText: false),
-            CustomTextFormField(
-                onSaved: (value) {
-                  setState(() {
-                    _password = value;
-                  });
-                },
-                regEx: r".{1,}",
+                hintStyle: TextStyle(color: Colors.white54),
+              ),
+            ),
+            TextFormField(
+              controller: _passwordController,
+              cursorColor: Colors.white,
+              style: TextStyle(color: Colors.white),
+              onSaved: (value) {
+                setState(() {
+                  _password = value;
+                });
+              },
+              validator: (value) {
+                if (value == null || value.length < 8) {
+                  return 'Password must be at least 8 characters';
+                }
+                return null;
+              },
+              obscureText: true,
+              decoration: InputDecoration(
+                fillColor: Color.fromRGBO(30, 29, 37, 1.0),
+                filled: true,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10.0),
+                  borderSide: BorderSide.none,
+                ),
                 hintText: "Password",
-                obscureText: true),
+                hintStyle: TextStyle(color: Colors.white54),
+              ),
+            ),
           ],
         ),
       ),
@@ -183,29 +243,62 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   Widget _registerButton() {
-    return RoundedButton(
-      name: "Register",
-      height: _deviceHeight * 0.065,
-      width: _deviceWidth * 0.65,
-      onPressed: () async {
-        if (_registerFormKey.currentState!.validate()) {
-          if (_profileImage == null) {
-            SnackBarService().showSnackBarError(
-              'Please select profile image!!!',
+    return Consumer<AuthenticationProvider>(
+        builder: (context, provider, child) {
+      return provider.isLoading
+          ? CircularProgressIndicator()
+          : RoundedButton(
+              name: "Register",
+              height: _deviceHeight * 0.065,
+              width: _deviceWidth * 0.65,
+              onPressed: () async {
+                if (_registerFormKey.currentState!.validate()) {
+                  if (_profileImage == null && !_isGoogleSignIn) {
+                    SnackBarService().showSnackBarError(
+                      'Please select profile image',
+                    );
+                  } else {
+                    _registerFormKey.currentState!.save();
+
+                    String? uid;
+                    if (_isGoogleSignIn) {
+                      // Complete Google registration with password
+                      uid =
+                          await _auth.completeGoogleSignUp(_password!, _name!);
+                    } else {
+                      // Normal email/password registration
+                      uid = await _auth.registerUserUsingEmailAndPassword(
+                          _email!, _password!);
+                    }
+
+                    if (uid != null) {
+                      String imageURL;
+                      if (_profileImage != null) {
+                        imageURL = (await _cloudStorage.saveUserImageToStorage(
+                            uid, _profileImage!))!;
+                      } else {
+                        // Use Google profile photo URL
+                        imageURL = _auth.googlePhotoUrl ??
+                            "https://cdn0.iconfinder.com/data/icons/occupation-002/64/programmer-programming-occupation-avatar-512.png";
+                      }
+
+                      await _db.createUser(uid, _email!, _name!, imageURL);
+
+                      if (!_isGoogleSignIn) {
+                        await _auth.logout();
+                        await _auth.loginUsingEmailAndPassword(
+                            _email!, _password!);
+                      }
+                    } else {
+                      SnackBarService().showSnackBarError(
+                        'Registration failed. Please try again.',
+                      );
+                    }
+                  }
+                }
+              },
             );
-          } else {
-            _registerFormKey.currentState!.save();
-            String? uid = await _auth.registerUserUsingEmailAndPassword(
-                _email!, _password!);
-            String? imageURL = await _cloudStorage.saveUserImageToStorage(
-                uid!, _profileImage!);
-            await _db.createUser(uid, _email!, _name!, imageURL!);
-            await _auth.logout();
-            await _auth.loginUsingEmailAndPassword(_email!, _password!);
-          }
-        }
-      },
-    );
+    });
   }
 
   Widget _googleSignInButton() {
@@ -219,34 +312,20 @@ class _RegisterPageState extends State<RegisterPage> {
 
   void _handleGoogleSignIn() async {
     try {
-      // Google Sign-In orqali avtorizatsiya qilish
-      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
-      if (googleUser != null) {
-        final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
-
-        // Google Sign-In tokenidan foydalanib Firebase uchun credential yaratish
-        final OAuthCredential credential = GoogleAuthProvider.credential(
-          accessToken: googleAuth.accessToken,
-          idToken: googleAuth.idToken,
-        );
-
-        // Firebase orqali ro'yxatdan o'tish yoki tizimga kirish
-        final UserCredential userCredential = await FirebaseAuth.instance.signInWithCredential(credential);
-
-        // Tizimga kirgan foydalanuvchi ma'lumotlari
-        final User? user = userCredential.user;
-
-        if (user != null) {
-          setState(() {
-            _user = user;
-          });
-
-          print("Google Sign-In muvaffaqiyatli: ${user.email}");
-        }
+      bool success = await _auth.preAuthWithGoogle();
+      if (success) {
+        setState(() {
+          _isGoogleSignIn = true;
+          _email = _auth.googleEmail;
+          _name = _auth.googleDisplayName;
+          _emailController.text = _email ?? "";
+          _nameController.text = _name ?? "";
+        });
       }
-    } catch (error) {
-      print("Google Sign-In xatosi: $error");
+    } catch (e) {
+      SnackBarService().showSnackBarError(
+        'Failed to sign in with Google. Please try again.',
+      );
     }
   }
-
 }
